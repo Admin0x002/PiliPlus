@@ -27,8 +27,8 @@ class _RelatedCoverPanelState extends State<RelatedCoverPanel> {
     tag: widget.heroTag,
   );
 
-  static const _gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-    maxCrossAxisExtent: CustomConfig.relatedCoverExtent,
+  static final _gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
+    maxCrossAxisExtent: CustomConfig.relatedCoverExtent.toDouble(),
     childAspectRatio: Style.aspectRatio,
     mainAxisSpacing: 8,
     crossAxisSpacing: 8,

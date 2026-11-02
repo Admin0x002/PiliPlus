@@ -25,7 +25,7 @@ abstract final class CustomConfig {
   );
 
   /// 相关视频封面网格中单个封面的最大宽度
-  static const double relatedCoverExtent = double.fromEnvironment(
+  static const int relatedCoverExtent = int.fromEnvironment(
     'CUSTOM_RELATED_COVER_EXTENT',
     defaultValue: 220,
   );
