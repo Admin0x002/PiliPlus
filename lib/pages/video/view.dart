@@ -902,6 +902,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     final double height = width / Style.aspectRatio16x9;
     final videoHeight = isFullScreen
         ? maxHeight - (isWindowMode && !isPortrait ? 0 : padding.top)
+        // [custom] 视频独占左栏：撑满整列，视频按比例居中，避免下方留白
+        : CustomConfig.hideVideoIntro
+        ? maxHeight - padding.top
         : height;
     if (height > maxHeight) {
       return childSplit(Style.aspectRatio16x9);

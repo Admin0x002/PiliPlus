@@ -18,15 +18,9 @@ abstract final class CustomConfig {
     defaultValue: true,
   );
 
-  /// 视频播放页：横屏分栏时，右侧相关视频只展示封面
+  /// 视频播放页：横屏分栏时，右侧相关视频只展示封面（单列）
   static const bool relatedCoverOnly = bool.fromEnvironment(
     'CUSTOM_RELATED_COVER_ONLY',
     defaultValue: true,
-  );
-
-  /// 相关视频封面网格中单个封面的最大宽度
-  static const int relatedCoverExtent = int.fromEnvironment(
-    'CUSTOM_RELATED_COVER_EXTENT',
-    defaultValue: 220,
   );
 }

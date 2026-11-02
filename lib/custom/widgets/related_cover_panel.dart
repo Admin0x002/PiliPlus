@@ -1,7 +1,6 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
-import 'package:PiliPlus/custom/custom_config.dart';
 import 'package:PiliPlus/custom/widgets/video_cover_card.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
@@ -27,13 +26,6 @@ class _RelatedCoverPanelState extends State<RelatedCoverPanel> {
     tag: widget.heroTag,
   );
 
-  static final _gridDelegate = SliverGridDelegateWithMaxCrossAxisExtent(
-    maxCrossAxisExtent: CustomConfig.relatedCoverExtent.toDouble(),
-    childAspectRatio: Style.aspectRatio,
-    mainAxisSpacing: 8,
-    crossAxisSpacing: 8,
-  );
-
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
@@ -47,10 +39,19 @@ class _RelatedCoverPanelState extends State<RelatedCoverPanel> {
     );
   }
 
-  Widget get _skeleton => SliverGrid(
-    gridDelegate: _gridDelegate,
-    delegate: SliverChildBuilderDelegate(
-      (context, index) => Skeleton(
+  /// 单列封面：宽度占满右侧栏，高度按封面比例推算
+  Widget _item(Widget child) => Padding(
+    padding: const EdgeInsets.only(bottom: 8),
+    child: AspectRatio(
+      aspectRatio: Style.aspectRatio,
+      child: child,
+    ),
+  );
+
+  Widget get _skeleton => SliverList.builder(
+    itemCount: 6,
+    itemBuilder: (context, index) => _item(
+      Skeleton(
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: ColorScheme.of(context).onInverseSurface,
@@ -58,7 +59,6 @@ class _RelatedCoverPanelState extends State<RelatedCoverPanel> {
           ),
         ),
       ),
-      childCount: 8,
     ),
   );
 
@@ -67,17 +67,18 @@ class _RelatedCoverPanelState extends State<RelatedCoverPanel> {
       Loading() => _skeleton,
       Success(:final response) =>
         response != null && response.isNotEmpty
-            ? SliverGrid.builder(
-                gridDelegate: _gridDelegate,
+            ? SliverList.builder(
+                itemCount: response.length,
                 itemBuilder: (context, index) {
-                  return VideoCoverCard(
-                    videoItem: response[index],
-                    onRemove: () => _relatedController.loadingState
-                      ..value.data!.removeAt(index)
-                      ..refresh(),
+                  return _item(
+                    VideoCoverCard(
+                      videoItem: response[index],
+                      onRemove: () => _relatedController.loadingState
+                        ..value.data!.removeAt(index)
+                        ..refresh(),
+                    ),
                   );
                 },
-                itemCount: response.length,
               )
             : const SliverToBoxAdapter(),
       Error(:final errMsg) => HttpError(
