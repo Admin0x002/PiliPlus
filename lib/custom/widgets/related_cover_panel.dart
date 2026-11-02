@@ -1,6 +1,7 @@
 import 'package:PiliPlus/common/skeleton/skeleton.dart';
 import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/loading_widget/http_error.dart';
+import 'package:PiliPlus/custom/custom_config.dart';
 import 'package:PiliPlus/custom/widgets/video_cover_card.dart';
 import 'package:PiliPlus/http/loading_state.dart';
 import 'package:PiliPlus/models/model_hot_video_item.dart';
@@ -65,26 +66,53 @@ class _RelatedCoverPanelState extends State<RelatedCoverPanel> {
   Widget _buildBody(LoadingState<List<HotVideoItemModel>?> loadingState) {
     return switch (loadingState) {
       Loading() => _skeleton,
-      Success(:final response) =>
-        response != null && response.isNotEmpty
-            ? SliverList.builder(
-                itemCount: response.length,
-                itemBuilder: (context, index) {
-                  return _item(
-                    VideoCoverCard(
-                      videoItem: response[index],
-                      onRemove: () => _relatedController.loadingState
-                        ..value.data!.removeAt(index)
-                        ..refresh(),
-                    ),
-                  );
-                },
-              )
-            : const SliverToBoxAdapter(),
+      Success(:final response) => _buildList(response),
       Error(:final errMsg) => HttpError(
         errMsg: errMsg,
         onReload: _relatedController.onReload,
       ),
     };
+  }
+
+  /// PGC 跳转（番剧/课程）基本都是会员或付费内容
+  static final _pgcUriRegex = RegExp(r'(bangumi|cheese)/');
+
+  static bool _isPaid(HotVideoItemModel item) {
+    final badge = item.badge;
+    if (badge != null &&
+        (badge == '充电专属' ||
+            badge.contains('会员') ||
+            badge.contains('付费') ||
+            badge.contains('课堂'))) {
+      return true;
+    }
+    final uri = item.redirectUrl;
+    return uri != null && _pgcUriRegex.hasMatch(uri);
+  }
+
+  Widget _buildList(List<HotVideoItemModel>? response) {
+    if (response == null || response.isEmpty) {
+      return const SliverToBoxAdapter();
+    }
+    final items = CustomConfig.hidePaidRelated
+        ? response.where((e) => !_isPaid(e)).toList(growable: false)
+        : response;
+    if (items.isEmpty) {
+      return const SliverToBoxAdapter();
+    }
+    return SliverList.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return _item(
+          VideoCoverCard(
+            videoItem: item,
+            onRemove: () => _relatedController.loadingState
+              ..value.data!.remove(item)
+              ..refresh(),
+          ),
+        );
+      },
+    );
   }
 }

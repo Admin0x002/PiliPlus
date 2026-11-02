@@ -898,6 +898,10 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
     if (maxWidth >= 560) {
       width = maxWidth - clampDouble(maxWidth - width, 280, 425);
     }
+    // [custom] 收窄右侧推荐栏，把宽度让给视频
+    if (CustomConfig.relatedCoverOnly && maxWidth >= 800) {
+      width = maxWidth - CustomConfig.splitRightExtent;
+    }
     final videoWidth = isFullScreen ? maxWidth : width;
     final double height = width / Style.aspectRatio16x9;
     final videoHeight = isFullScreen

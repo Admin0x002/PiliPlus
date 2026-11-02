@@ -23,4 +23,16 @@ abstract final class CustomConfig {
     'CUSTOM_RELATED_COVER_ONLY',
     defaultValue: true,
   );
+
+  /// 右侧推荐栏宽度（逻辑像素）
+  static const int splitRightExtent = int.fromEnvironment(
+    'CUSTOM_SPLIT_RIGHT_EXTENT',
+    defaultValue: 320,
+  );
+
+  /// 相关视频中过滤掉充电专属 / 大会员 / 付费课程等收费内容
+  static const bool hidePaidRelated = bool.fromEnvironment(
+    'CUSTOM_HIDE_PAID_RELATED',
+    defaultValue: true,
+  );
 }
