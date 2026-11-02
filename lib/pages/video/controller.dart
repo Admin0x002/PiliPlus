@@ -7,6 +7,7 @@ import 'package:PiliPlus/common/style.dart';
 import 'package:PiliPlus/common/widgets/pair.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/scaffold/mini_scaffold.dart';
+import 'package:PiliPlus/custom/custom_config.dart';
 import 'package:PiliPlus/grpc/bilibili/app/listener/v1.pbenum.dart'
     show PlaylistSource;
 import 'package:PiliPlus/grpc/dm.dart';
@@ -165,11 +166,14 @@ class VideoDetailController extends GetxController
   // 预设的解码格式
   late List<VideoDecodeFormatType> preferCodecs = Pref.preferCodecs;
 
-  bool get showReply => isFileSource
-      ? false
-      : isUgc
-      ? plPlayerController.showVideoReply
-      : plPlayerController.showBangumiReply;
+  // [custom] 关闭评论 Tab 时，连评论数据一起不发请求
+  bool get showReply =>
+      !CustomConfig.hideCommentTab &&
+      (isFileSource
+          ? false
+          : isUgc
+          ? plPlayerController.showVideoReply
+          : plPlayerController.showBangumiReply);
 
   bool get showRelatedVideo =>
       isFileSource ? false : plPlayerController.showRelatedVideo;

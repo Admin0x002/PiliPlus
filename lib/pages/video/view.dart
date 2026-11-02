@@ -17,6 +17,8 @@ import 'package:PiliPlus/common/widgets/scroll_physics.dart'
 import 'package:PiliPlus/common/widgets/simple_app_bar.dart';
 import 'package:PiliPlus/common/widgets/sliver/video_header.dart';
 import 'package:PiliPlus/common/widgets/svg/play_icon.dart';
+import 'package:PiliPlus/custom/custom_config.dart';
+import 'package:PiliPlus/custom/widgets/related_cover_panel.dart';
 import 'package:PiliPlus/models/common/episode_panel_type.dart';
 import 'package:PiliPlus/models/common/pgc_episode_type.dart';
 import 'package:PiliPlus/models_new/pgc/pgc_info_model/result.dart';
@@ -921,7 +923,9 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                 height: videoHeight,
               ),
             ),
-            if (!videoDetailController.isFileSource)
+            // [custom] 分栏布局下移除播放器下方的 UP 主/标题/简介区块
+            if (!videoDetailController.isFileSource &&
+                !CustomConfig.hideVideoIntro)
               Offstage(
                 offstage: isFullScreen,
                 child: SizedBox(
@@ -966,10 +970,17 @@ class _VideoDetailPageVState extends State<VideoDetailPageV>
                               controller:
                                   videoDetailController.effectiveIntroScrollCtr,
                               slivers: [
-                                RelatedVideoPanel(
-                                  key: videoRelatedKey,
-                                  heroTag: heroTag,
-                                ),
+                                // [custom] 右侧相关视频只保留封面
+                                if (CustomConfig.relatedCoverOnly)
+                                  RelatedCoverPanel(
+                                    key: videoRelatedKey,
+                                    heroTag: heroTag,
+                                  )
+                                else
+                                  RelatedVideoPanel(
+                                    key: videoRelatedKey,
+                                    heroTag: heroTag,
+                                  ),
                               ],
                             ),
                           ),
