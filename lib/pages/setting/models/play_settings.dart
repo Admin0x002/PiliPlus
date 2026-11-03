@@ -2,6 +2,7 @@ import 'dart:io' show Platform;
 
 import 'package:PiliPlus/common/widgets/custom_icon.dart';
 import 'package:PiliPlus/common/widgets/image_grid/image_grid_view.dart';
+import 'package:PiliPlus/custom/custom_pref.dart';
 import 'package:PiliPlus/models/common/audio_normalization.dart';
 import 'package:PiliPlus/models/common/super_chat_type.dart';
 import 'package:PiliPlus/models/common/super_resolution_type.dart';
@@ -98,6 +99,14 @@ List<SettingsModel> get playSettings => [
     subtitle: '左侧双击快退/右侧双击快进，关闭则双击均为暂停/播放',
     leading: Icon(Icons.touch_app_outlined),
     setKey: SettingBoxKey.enableQuickDouble,
+    defaultVal: true,
+  ),
+  // [custom] 播放页手势定制
+  const SwitchModel(
+    title: '单击暂停/播放',
+    subtitle: '开启：单击暂停/播放，双击呼出底部控制条，顶部控制条常驻；关闭：保持上游单击呼出控制条、双击暂停/播放',
+    leading: Icon(Icons.play_circle_outline),
+    setKey: CustomPref.tapToPauseKey,
     defaultVal: true,
   ),
   const SwitchModel(

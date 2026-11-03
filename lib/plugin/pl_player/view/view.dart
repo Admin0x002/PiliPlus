@@ -18,6 +18,7 @@ import 'package:PiliPlus/common/widgets/player_bar.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/audio_video_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/progress_bar/segment_progress_bar.dart';
 import 'package:PiliPlus/common/widgets/view_safe_area.dart';
+import 'package:PiliPlus/custom/custom_pref.dart';
 import 'package:PiliPlus/models/common/sponsor_block/action_type.dart';
 import 'package:PiliPlus/models/common/sponsor_block/post_segment_model.dart';
 import 'package:PiliPlus/models/common/sponsor_block/segment_type.dart';
@@ -197,6 +198,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   StreamSubscription? _controlsListener;
   void _onControlChanged(bool val) {
     final visible = val && !plPlayerController.controlsLock.value;
+    // [custom] 顶部控制条常驻时，时间/电量等信息保持刷新
+    final headerVisible = visible || CustomPref.tapToPause;
 
     if ((widget.headerControl.key as GlobalKey<TimeBatteryMixin>).currentState
         case final state?) {
@@ -205,7 +208,7 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         state.provider
           ?..startIfNeeded()
           ..muted = !visible;
-        if (visible) {
+        if (headerVisible) {
           state.startClock();
         } else {
           state.stopClock();
@@ -257,6 +260,12 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     _controlsListener = plPlayerController.showControls.listen(
       _onControlChanged,
     );
+    // [custom] 顶部控制条常驻时，首帧后同步一次时钟/电量状态
+    if (CustomPref.tapToPause) {
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _onControlChanged(plPlayerController.showControls.value),
+      );
+    }
 
     _transformationController = TransformationController();
 
@@ -1123,7 +1132,31 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
     plPlayerController.doubleTapFuc(type);
   }
 
+  /// [custom] 上一次双击的时间，避免双击时误触发单击的暂停/播放
+  DateTime? _customDoubleTapAt;
+
   void _onTapUp(TapUpDetails details) {
+    // [custom] 单击暂停/播放（双击由 _onDoubleTapDown 处理为呼出底部控制条）
+    if (CustomPref.tapToPause &&
+        !plPlayerController.isLive &&
+        details.kind != ui.PointerDeviceKind.mouse) {
+      if (_suspendedDm != null) {
+        if (_suspendedDm!.suspend) {
+          _dmOffset.value = details.localPosition;
+        } else {
+          _suspendedDm = null;
+        }
+        return;
+      }
+      final lastDoubleTap = _customDoubleTapAt;
+      if (lastDoubleTap != null &&
+          DateTime.now().difference(lastDoubleTap) <
+              const Duration(milliseconds: 500)) {
+        return;
+      }
+      plPlayerController.onDoubleTapCenter();
+      return;
+    }
     switch (details.kind) {
       case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
         plPlayerController.onDoubleTapCenter();
@@ -1162,6 +1195,16 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
   }
 
   void _onDoubleTapDown(TapDownDetails details) {
+    // [custom] 触屏双击：只呼出底部控制条，不切全屏也不快进/快退
+    if (CustomPref.tapToPause &&
+        !plPlayerController.isLive &&
+        details.kind != ui.PointerDeviceKind.mouse) {
+      _customDoubleTapAt = DateTime.now();
+      if (!plPlayerController.controlsLock.value) {
+        plPlayerController.controls = true;
+      }
+      return;
+    }
     switch (details.kind) {
       case ui.PointerDeviceKind.mouse when PlatformUtils.isDesktop:
         plPlayerController.triggerFullScreen(status: !isFullScreen);
@@ -1581,6 +1624,8 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
                   AppBarAni(
                     isTop: true,
                     controller: _animationController,
+                    // [custom] 顶部控制条常驻
+                    alwaysShow: CustomPref.tapToPause,
                     isFullScreen: isFullScreen,
                     removeSafeArea: plPlayerController.removeSafeArea,
                     child: plPlayerController.isDesktopPip

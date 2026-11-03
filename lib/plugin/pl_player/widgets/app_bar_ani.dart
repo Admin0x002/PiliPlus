@@ -9,6 +9,7 @@ class AppBarAni extends StatelessWidget {
     required this.isTop,
     required this.isFullScreen,
     required this.removeSafeArea,
+    this.alwaysShow = false,
   });
 
   final Widget child;
@@ -16,6 +17,9 @@ class AppBarAni extends StatelessWidget {
   final bool isTop;
   final bool isFullScreen;
   final bool removeSafeArea;
+
+  /// [custom] 常驻显示，不跟随控制条显隐动画
+  final bool alwaysShow;
 
   static final _topPos = Tween<Offset>(
     begin: const Offset(0.0, -1.0),
@@ -49,20 +53,22 @@ class AppBarAni extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final content = DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: isTop ? _topDecoration : _bottomDecoration,
+      ),
+      child: removeSafeArea
+          ? child
+          : ViewSafeArea(
+              left: isFullScreen,
+              right: isFullScreen,
+              child: child,
+            ),
+    );
+    if (alwaysShow) return content;
     return SlideTransition(
       position: controller.drive(isTop ? _topPos : _bottomPos),
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: isTop ? _topDecoration : _bottomDecoration,
-        ),
-        child: removeSafeArea
-            ? child
-            : ViewSafeArea(
-                left: isFullScreen,
-                right: isFullScreen,
-                child: child,
-              ),
-      ),
+      child: content,
     );
   }
 }
