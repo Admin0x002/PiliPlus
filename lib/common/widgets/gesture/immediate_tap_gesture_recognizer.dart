@@ -10,6 +10,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
     this.onTapUp,
     this.onTapCancel,
     this.onTap,
+    this.tapSlop = 2.0,
   });
 
   static bool _defaultButtonAcceptBehavior(int buttons) =>
@@ -22,6 +23,10 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   GestureTapCancelCallback? onTapCancel;
 
   GestureTapCallback? onTap;
+
+  /// [custom] 点击允许的最大位移（逻辑像素）。
+  /// 上游固定 2px，鼠标没问题，但手指轻抖就会超出而导致单击失效。
+  final double tapSlop;
 
   PointerUpEvent? _up;
   int? _activePointer;
@@ -79,7 +84,7 @@ class ImmediateTapGestureRecognizer extends OneSequenceGestureRecognizer {
   }
 
   void _handlePointerMove(PointerMoveEvent event) {
-    if ((event.position - _initialPosition!).distanceSquared > 4.0) {
+    if ((event.position - _initialPosition!).distance > tapSlop) {
       resolve(GestureDisposition.rejected);
       stopTrackingPointer(event.pointer);
     }

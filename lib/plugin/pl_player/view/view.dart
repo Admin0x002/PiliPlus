@@ -307,8 +307,14 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
       });
     }
 
-    if (plPlayerController.enableTapDm) {
+    // [custom] 触屏点击容差：上游固定 2px，手指轻抖就会导致单击失效
+    final tapSlop = CustomPref.tapToPause ? 10.0 : 2.0;
+    // [custom] 单击暂停模式下不做弹幕命中测试，避免点击被弹幕动作吞掉
+    final tapDmEnabled =
+        plPlayerController.enableTapDm && !CustomPref.tapToPause;
+    if (tapDmEnabled) {
       _tapGestureRecognizer = ImmediateTapGestureRecognizer(
+        tapSlop: tapSlop,
         onTapDown: plPlayerController.enableShowDanmakuAdaptive.value
             ? _onTapDown
             : null,
@@ -323,7 +329,10 @@ class _PLVideoPlayerState extends State<PLVideoPlayer>
         _tapGestureRecognizer.onTapDown = value ? _onTapDown : null;
       });
     } else {
-      _tapGestureRecognizer = ImmediateTapGestureRecognizer(onTapUp: _onTapUp);
+      _tapGestureRecognizer = ImmediateTapGestureRecognizer(
+        tapSlop: tapSlop,
+        onTapUp: _onTapUp,
+      );
     }
 
     _doubleTapGestureRecognizer = DoubleTapGestureRecognizer()

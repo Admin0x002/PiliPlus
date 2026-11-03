@@ -40,6 +40,8 @@ git config rerere.autoupdate true
 | 过滤充电专属 / 大会员 / 付费课程 | `CustomConfig.hidePaidRelated` | `lib/custom/widgets/related_cover_panel.dart`（`_isPaid`） |
 | 单击暂停/播放、双击呼出底部控制条、顶部控制条常驻 | 设置项「单击暂停/播放」 | `lib/custom/custom_pref.dart`、`lib/plugin/pl_player/view/view.dart`、`lib/plugin/pl_player/widgets/app_bar_ani.dart`、`lib/pages/setting/models/play_settings.dart` |
 
+> 「单击暂停/播放」开启时，同时会把触屏点击容差从上游的 2px 放宽到 10px，并关闭弹幕命中测试（保证点画面就是暂停/播放）；关闭后全部恢复上游行为。
+
 两类开关的区别：
 
 - **编译期开关** `lib/custom/custom_config.dart`：`bool.fromEnvironment`，默认全开，可在构建时覆盖：
